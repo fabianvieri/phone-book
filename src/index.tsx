@@ -10,6 +10,7 @@ const root = ReactDOM.createRoot(
 );
 
 const API_URI = process.env.REACT_APP_API_URI;
+console.log(API_URI);
 
 const client = new ApolloClient({
 	uri: API_URI,
