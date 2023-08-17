@@ -9,8 +9,10 @@ const root = ReactDOM.createRoot(
 	document.getElementById('root') as HTMLElement
 );
 
+const API_URI = process.env.REACT_APP_API_URI;
+
 const client = new ApolloClient({
-	uri: 'https://web-tools.tokopedia.com/postgres/v1/graphql',
+	uri: API_URI,
 	cache: new InMemoryCache(),
 });
 
