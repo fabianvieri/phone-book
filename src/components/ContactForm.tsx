@@ -19,7 +19,7 @@ const contactSchema = z.object({
   last_name: z
     .string()
     .min(1, { message: "Last name is too short" })
-    .max(30, { message: "Last name is too short" }),
+    .max(30, { message: "Last name is too long" }),
   phones: z
     .array(
       z.object({
@@ -41,7 +41,7 @@ const initial = {
 
 const Paragraph = styled.p`
   margin: 0;
-  color: hotpink;
+  color: red;
   font-size: 0.85rem;
 `;
 
@@ -61,6 +61,8 @@ function ContactForm({ mode, defaultValues = initial }: FormProps) {
   const firstNameError = errors.first_name?.message;
   const lastNameError = errors.last_name?.message;
   const phonesError = errors.phones?.message;
+
+  console.log(firstNameError, lastNameError, phonesError);
 
   const onSubmitContact = (data: ContactData) => {
     console.log(data);
