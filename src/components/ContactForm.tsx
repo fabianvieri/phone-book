@@ -5,6 +5,8 @@ import { useForm, useFieldArray } from "react-hook-form";
 
 import { Contact } from "../types";
 import FormInput from "./FormInput";
+import { useAddContact } from "../hooks/useAddContact";
+import { useEditContact } from "../hooks/useEditContact";
 
 type FormProps = {
   mode: "edit" | "add";
@@ -57,6 +59,8 @@ function ContactForm({ mode, defaultValues = initial }: FormProps) {
   });
 
   const { append, remove, fields } = useFieldArray({ control, name: "phones" });
+  const {loading:addLoading, addContact} = useAddContact();
+  const {loading:editLoading, editContact} = useEditContact();
 
   const firstNameError = errors.first_name?.message;
   const lastNameError = errors.last_name?.message;
@@ -66,6 +70,8 @@ function ContactForm({ mode, defaultValues = initial }: FormProps) {
 
   const onSubmitContact = (data: ContactData) => {
     console.log(data);
+	if(mode === 'add') addContact(data);
+	else editContact(data)
   };
 
   return (
@@ -76,13 +82,13 @@ function ContactForm({ mode, defaultValues = initial }: FormProps) {
         placeholder="First name"
         isError={!!firstNameError}
       />
-      {firstNameError && <p>{firstNameError}</p>}
+      {firstNameError && <Paragraph>{firstNameError}</Paragraph>}
       <FormInput
         {...register("last_name")}
         placeholder="Last name"
         isError={!!lastNameError}
       />
-      {lastNameError && <p>{lastNameError}</p>}
+      {lastNameError && <Paragraph>{lastNameError}</Paragraph>}
 
       {fields.map((field, index) => (
         <div key={field.id}>
@@ -94,7 +100,7 @@ function ContactForm({ mode, defaultValues = initial }: FormProps) {
           <button onClick={() => remove(index)}>Remove</button>
         </div>
       ))}
-      {phonesError && <p>{phonesError}</p>}
+      {phonesError && <Paragraph>{phonesError}</Paragraph>}
 
       <button onClick={() => append({ number: "" })}>Add Phone</button>
       <button type="submit">
