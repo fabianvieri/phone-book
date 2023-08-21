@@ -1,29 +1,35 @@
-import { useEffect } from "react";
-import toast from "react-hot-toast";
-import { useMutation } from "@apollo/client";
+import { useEffect } from 'react';
+import toast from 'react-hot-toast';
+import { useMutation } from '@apollo/client';
 
-import { ADD_CONTACT } from "../gql/queries";
-import { ActionType, ContactGQL } from "../types";
-import { useContactsContext } from "./useContactsContext";
+import { ActionType, ContactGQL, APIAddResponse } from '../types';
+
+import { ADD_CONTACT } from '../gql/queries';
+import { useContactsContext } from './useContactsContext';
 
 export function useAddContact() {
-  const { dispatch } = useContactsContext();
-  const [addQuery, { loading, error, data }] = useMutation(ADD_CONTACT);
+	const { dispatch } = useContactsContext();
+	const [addQuery, { loading, error, data }] = useMutation<APIAddResponse>(
+		ADD_CONTACT,
+		{
+			onCompleted: (data) => {
+				dispatch({
+					type: ActionType.ADD_CONTACT,
+					payload: data.insert_contact.returning,
+				});
+				toast.success('Success add contact');
+			},
+		}
+	);
 
-  const addContact = (contact: Omit<ContactGQL, "id">) => {
-    addQuery({ variables: contact });
-  };
+	useEffect(() => {
+		if (data) {
+		}
+		if (error) toast.error('Error add contact');
+	}, [data, error, dispatch]);
 
-  useEffect(() => {
-    if (data) {
-      dispatch({ type: ActionType.ADD_CONTACT, payload: data.contact });
-      toast.success("Success add contact");
-    }
-    if (error) toast.error("Error add contact");
-  }, [data, error, dispatch]);
-
-  return {
-    loading,
-    addContact,
-  };
+	return {
+		loading,
+		addQuery,
+	};
 }

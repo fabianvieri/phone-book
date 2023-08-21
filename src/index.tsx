@@ -1,7 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import reportWebVitals from './reportWebVitals';
+import { persistCache, LocalStorageWrapper } from 'apollo3-cache-persist';
 import { Theme, ThemeProvider } from '@emotion/react';
+
 import { ApolloProvider, ApolloClient, InMemoryCache } from '@apollo/client';
 
 import './index.css';
@@ -13,29 +15,36 @@ const root = ReactDOM.createRoot(
 
 const API_URI = process.env.REACT_APP_API_URI;
 
-const client = new ApolloClient({
-	uri: API_URI,
-	cache: new InMemoryCache(),
+const cache = new InMemoryCache();
+
+persistCache({
+	cache,
+	storage: new LocalStorageWrapper(window.localStorage),
+}).then(() => {
+	const client = new ApolloClient({
+		uri: API_URI,
+		cache: cache,
+	});
+
+	const theme: Theme = {
+		colors: {
+			primary: '#557A46',
+			secondary: '#7A9D54',
+			light: '#F2EE9D',
+			dark: '#8C3333',
+		},
+	};
+
+	root.render(
+		<React.StrictMode>
+			<ApolloProvider client={client}>
+				<ThemeProvider theme={theme}>
+					<App />
+				</ThemeProvider>
+			</ApolloProvider>
+		</React.StrictMode>
+	);
 });
-
-const theme: Theme = {
-	colors: {
-		primary: '#557A46',
-		secondary: '#7A9D54',
-		light: '#F2EE9D',
-		dark: '#8C3333',
-	},
-};
-
-root.render(
-	<React.StrictMode>
-		<ApolloProvider client={client}>
-			<ThemeProvider theme={theme}>
-				<App />
-			</ThemeProvider>
-		</ApolloProvider>
-	</React.StrictMode>
-);
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
