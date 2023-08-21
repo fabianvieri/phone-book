@@ -1,8 +1,10 @@
 import { z } from "zod";
+import styled from "@emotion/styled";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 
 import { Contact } from "../types";
+import FormInput from "./FormInput";
 
 type FormProps = {
   mode: "edit" | "add";
@@ -10,9 +12,23 @@ type FormProps = {
 };
 
 const contactSchema = z.object({
-  first_name: z.string(),
-  last_name: z.string(),
-  phones: z.array(z.object({ number: z.string().min(10) })).min(1),
+  first_name: z
+    .string()
+    .min(2, { message: "First name is too short" })
+    .max(30, { message: "First name is too long" }),
+  last_name: z
+    .string()
+    .min(1, { message: "Last name is too short" })
+    .max(30, { message: "Last name is too short" }),
+  phones: z
+    .array(
+      z.object({
+        number: z
+          .string()
+          .min(10, { message: "Please input valid phone number" }),
+      })
+    )
+    .nonempty({ message: "Please input a phone number" }),
 });
 
 type ContactData = z.infer<typeof contactSchema>;
@@ -22,6 +38,12 @@ const initial = {
   last_name: "",
   phones: [{ number: "" }],
 };
+
+const Paragraph = styled.p`
+  margin: 0;
+  color: hotpink;
+  font-size: 0.85rem;
+`;
 
 function ContactForm({ mode, defaultValues = initial }: FormProps) {
   const {
@@ -36,6 +58,10 @@ function ContactForm({ mode, defaultValues = initial }: FormProps) {
 
   const { append, remove, fields } = useFieldArray({ control, name: "phones" });
 
+  const firstNameError = errors.first_name?.message;
+  const lastNameError = errors.last_name?.message;
+  const phonesError = errors.phones?.message;
+
   const onSubmitContact = (data: ContactData) => {
     console.log(data);
   };
@@ -43,22 +69,35 @@ function ContactForm({ mode, defaultValues = initial }: FormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmitContact)}>
       <h2>Contact Form</h2>
-      <input {...register("first_name")} placeholder="First name" />
-	  {errors.first_name && <p>{errors.first_name.message}</p>}
-      <input {...register("last_name")} placeholder="Last name" />
-	  {errors.last_name && <p>{errors.last_name.message}</p>}
+      <FormInput
+        {...register("first_name")}
+        placeholder="First name"
+        isError={!!firstNameError}
+      />
+      {firstNameError && <p>{firstNameError}</p>}
+      <FormInput
+        {...register("last_name")}
+        placeholder="Last name"
+        isError={!!lastNameError}
+      />
+      {lastNameError && <p>{lastNameError}</p>}
+
       {fields.map((field, index) => (
         <div key={field.id}>
-          <input
+          <FormInput
             {...register(`phones.${index}.number`)}
             placeholder="Phone number"
+            isError={!!errors.phones?.[index]?.number?.message}
           />
-		  {errors.phones?.[index]?.number && <p>{errors.phones?.[index]?.number?.message}</p>}
           <button onClick={() => remove(index)}>Remove</button>
         </div>
       ))}
+      {phonesError && <p>{phonesError}</p>}
+
       <button onClick={() => append({ number: "" })}>Add Phone</button>
-      <button type="submit">Submit</button>
+      <button type="submit">
+        {mode === "add" ? "Add Contact" : "Edit Contact"}
+      </button>
     </form>
   );
 }
