@@ -1,5 +1,10 @@
 import styled from '@emotion/styled';
 import { BsSearch } from 'react-icons/bs';
+import { ChangeEvent, useEffect, useState } from 'react';
+
+type SearchInputPros = {
+	setSearch: React.Dispatch<React.SetStateAction<string>>;
+};
 
 const SearchInputContainer = styled.div`
 	display: flex;
@@ -23,16 +28,31 @@ const Input = styled.input`
 
 const Icon = styled.div`
 	display: none;
-
 	@media (min-width: 400px) {
 		display: flex;
 	}
 `;
 
-function SearchInput() {
+function SearchInput({ setSearch }: SearchInputPros) {
+	const [value, setValue] = useState('');
+
+	const onInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+		setValue(e.target.value);
+	};
+
+	useEffect(() => {
+		const timeout = setTimeout(() => setSearch(value), 500);
+		return () => clearTimeout(timeout);
+	}, [value, setSearch]);
+
 	return (
 		<SearchInputContainer>
-			<Input type="text" placeholder="Search contact name" />
+			<Input
+				type="text"
+				placeholder="Search contact name"
+				value={value}
+				onChange={onInputChange}
+			/>
 			<Icon>
 				<BsSearch size={20} />
 			</Icon>
